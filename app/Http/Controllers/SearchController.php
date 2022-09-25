@@ -16,6 +16,8 @@ class SearchController extends Controller
      */
     public function index(Request $request)
     {
+        //タイトル名
+        $index = "Search result";
         $keyword = trim($request->keyword);
         $users  = User::where('name', 'like', "%{$keyword}%")->pluck('id')->all();
         $tweets = Tweet::query()
@@ -23,7 +25,7 @@ class SearchController extends Controller
             ->orWhere('description', 'like', "%{$keyword}%")
             ->orWhereIn('user_id', $users)
             ->get();
-        return view('tweet.index', compact('tweets'));
+        return view('tweet.index', compact('tweets', 'index'));
     }
 
     /**
