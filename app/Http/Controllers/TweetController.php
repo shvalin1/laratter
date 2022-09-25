@@ -7,6 +7,7 @@ use Validator;
 use App\Models\Tweet;
 use Auth;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth as FacadesAuth;
 
 class TweetController extends Controller
 {
@@ -18,7 +19,8 @@ class TweetController extends Controller
     public function index()
     {
         $tweets = Tweet::getAllOrderByUpdated_at();
-        return view('tweet.index', compact('tweets'));
+        $index = "tweet index";
+        return view('tweet.index', compact('tweets', 'index'));
     }
 
     /**
@@ -126,17 +128,21 @@ class TweetController extends Controller
 
     public function mydata()
     {
+        //タイトル名
+        $index = Auth::user()->name;
         // Userモデルに定義したリレーションを使用してデータを取得する．
         $tweets = User::query()
             ->find(Auth::user()->id)
             ->userTweets()
             ->orderBy('created_at', 'desc')
             ->get();
-        return view('tweet.index', compact('tweets'));
+        return view('tweet.index', compact('tweets', 'index'));
     }
 
     public function timeline()
     {
+        //タイトル名
+        $index = 'Timeline';
         // フォローしているユーザを取得する
         $followings = User::find(Auth::id())->followings->pluck('id')->all();
         // 自分とフォローしている人が投稿したツイートを取得する
@@ -145,17 +151,25 @@ class TweetController extends Controller
             ->orWhereIn('user_id', $followings)
             ->orderBy('updated_at', 'desc')
             ->get();
-        return view('tweet.index', compact('tweets'));
+        return view('tweet.index', compact('tweets', 'index'));
     }
 
     public function userdata($id)
     {
+        // ターゲットユーザのデータ
+        $user = User::find($id);
+        //タイトル名
+        $index = User::find($id)->name;
+        // ターゲットユーザのフォロワー一覧
+        $followers = $user->followers;
+        // ターゲットユーザのフォローしている人一覧
+        $followings  = $user->followings;
         // Userモデルに定義したリレーションを使用してデータを取得する．
         $tweets = User::query()
             ->find($id)
             ->userTweets()
             ->orderBy('created_at', 'desc')
             ->get();
-        return view('tweet.index', compact('tweets'));
+        return view('tweet.index', compact('tweets', 'index', 'followers', 'followings', 'user'));
     }
 }
